@@ -8,6 +8,12 @@ a solid tile and his feet come down on known solid ground past the hazard. Among
 takes the one that lands closest past the hazard (jump only as far as needed), and it chooses the
 approach speed that makes such a jump exist. Enemies: wait for them, then jump over them if the
 ceiling allows, else stomp in place with a short hop. Every LEFT checks the ground behind.
+
+Submission note (Claude, ~2 h): arc planning over the tile map with measured jump tables,
+interpolated by takeoff speed. Clears 1-1 in one attempt; 1-2 reaches ~1190 (goomba pairs under
+low ceilings), 1-3 ~720 (moving lift platforms are enemy slots 0x24-0x2C, not tiles: unsupported),
+1-4 ~1220 (firebars ignored, then a firebar). Next 2 h: model lifts as movable ground, stomp
+timing from the game's real hitboxes instead of sprite boxes, and treat firebars as timed gates.
 """
 
 from __future__ import annotations
@@ -447,8 +453,8 @@ class ClaudePlayer:
             if result is None:
                 continue
             land, outcome = result
-            if outcome == "land":
-                continue  # neither over nor onto: a hop that ends among the enemies
+            if outcome == "land" and not self._clear_landing(land, len(arc), enemies):
+                continue  # neither over nor onto, and ends next to an enemy
             if hazard is not None and hazard[0] == "pit" and land > hazard[1] - TILE:
                 continue  # would land in or right at the pit; terrain planning handles that
             key = (0 if outcome == "over" else 1, land)  # clearing beats landing on it
@@ -471,6 +477,14 @@ class ClaudePlayer:
             return "right"  # walking away: close in slowly, a walking jump clears it in time
         self.reason = "hold:enemy"
         return "noop"
+
+    def _clear_landing(self, land_x: int, frames: int, enemies: list[Enemy]) -> bool:
+        """No enemy predicted within 24 px of where this arc comes down."""
+        for e in enemies:
+            vx = self.enemy_vx.get(id(e), -DEFAULT_ENEMY_VX if e.dx > 0 else DEFAULT_ENEMY_VX)
+            if abs((e.x + vx * frames) - land_x) < 24:
+                return False
+        return True
 
     def _track(self, enemies: list[Enemy]) -> None:
         """Per-enemy velocity averaged over a window, matched by kind and nearest x."""
