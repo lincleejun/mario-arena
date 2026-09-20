@@ -6,6 +6,28 @@ harness owns the emulator, pacing, frame-precise button presses, retries, level 
 and results, so every player is compared on the same terms. Design notes: `docs/DESIGN.md`.
 Brief for agents writing a player: `task.md`.
 
+## See it play
+
+The `claude` player (an arc planner: measured jump tables simulated against the tile map, no
+model, no pixels) clearing **1-1** in one attempt, turn-based, 36 s of game time:
+
+![claude clears 1-1](docs/claude-1-1.gif)
+
+The same player on **1-2**, reaching x=1190 before a goomba pair under a low ceiling gets it:
+
+![claude on 1-2](docs/claude-1-2.gif)
+
+Both recordings come straight from `uv run play ... --record` ([mp4 1-1](docs/claude-1-1.mp4),
+[mp4 1-2](docs/claude-1-2.mp4)). Official scores so far, `--levels all --turn-based --retries 3`:
+
+| player | 1-1 | 1-2 | cleared |
+| --- | --- | --- | --- |
+| runner (hold run-right) | x=312 | - | 0 |
+| reflex (rules) | CLEAR, 2249 decisions | x=873 | 1 |
+| claude (arc planner) | CLEAR, 2183 decisions | x=1190 | 1 |
+
+Want to beat it? `task.md` is the brief: one file, `players/<you>.py`, same command for everyone.
+
 ```bash
 uv sync   # once; every `uv run` below keeps the env in sync
 uv run arena actions                                          # the macro vocabulary
@@ -76,8 +98,8 @@ frame from that frame on: position, speed, buttons, enemies.
 ## Players so far
 
 - `runner`: hold run-right. The floor; dies at the first goomba.
-- `reflex`: rules with priorities pit > wall > enemy > run, tuned offline. Clears 1-1 in both
-  paces; reaches 1241 on 1-2, fails the first big gap of 1-3 and the first lava pit of 1-4.
+- `reflex`: rules with priorities pit > wall > enemy > run, tuned offline. Clears 1-1; 873 on 1-2.
+- `claude` (`players/claude.py`): arc planner, see above. Clears 1-1; 1190 on 1-2, 724 on 1-3, 1220 on 1-4.
 - `script`: replays a JSON list or a trace.jsonl. No intelligence; proves the loop runs without AI.
 - `manual`: a human, one instruction per step, turn-based.
 
