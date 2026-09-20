@@ -39,8 +39,10 @@ uv run arena replay runs/<id> --record                            # 回放并出
 正式评测用固定命令，所有玩家一致：
 
 ```bash
-uv run play --player players/<name>.py --levels all --fps 0 --retries 3
+uv run play --player players/<name>.py --levels all --turn-based --retries 3
 ```
+
+回合制是为了可复现：实时模式下玩家线程和模拟器有竞态，同一玩家两次结果可能不同；回合制下模拟器等玩家，结果逐帧确定。开发时也建议用 `--turn-based`。
 
 排序依据依次是：通关数、未通关的那一关走到的最远 x、总决策数（少者优）。附带记录你的开发用时。
 
