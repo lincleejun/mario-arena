@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mario-arena"
+version = "0.1.0"
+description = "A harness that lets any model, tool or program play Super Mario Bros. from RAM state."
+requires-python = ">=3.13"
+dependencies = [
+  "gym-super-mario-bros>=9.1.0",
+  "gymnasium",
+  "nes-py>=9.0.1",
+  "numpy>=2.1",
+  "imageio>=2.34",
+  "imageio-ffmpeg>=0.4",
+]
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.9"]
+
+[project.scripts]
+arena = "arena.__main__:main"
+play = "arena.__main__:play_main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["arena"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
